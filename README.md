@@ -43,7 +43,11 @@ Koko doesn't just track tasks — she follows up on them. She reminds you and yo
 
 🔌 Integrations
 Koko works where you already work. No switching tools, no new platforms to learn.
-PlatformStatusZoom✅ SupportedGoogle Meet✅ SupportedMicrosoft Teams✅ SupportedWhatsApp✅ Supported
+PlatformStatusZoom
+✅ SupportedGoogle Meet
+✅ SupportedMicrosoft Teams
+✅ SupportedWhatsApp
+✅ Supported
 More integrations coming soon.
 
 👤 Who Is Koko For?
