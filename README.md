@@ -36,7 +36,7 @@ Koko listens to your meetings and conversations in real time. She processes spok
 Long meetings condensed into short, clear, actionable recaps. Koko structures your summary in a format that's easy to read, share, and act on immediately.
 ✉️ Email Assistant
 Koko drafts your follow-up emails automatically based on what was discussed. Review, tweak if needed, and hit send. What used to take 20 minutes now takes 20 seconds.
-✅ Action Items
+**✅ Action Items**
 Koko extracts every task, deadline, and commitment from the conversation. She assigns them clearly so everyone on the team knows what they're responsible for and when it's due.
 🔔 Smart Reminders
 Koko doesn't just track tasks — she follows up on them. She reminds you and your team before deadlines hit, so nothing slips through the cracks.
