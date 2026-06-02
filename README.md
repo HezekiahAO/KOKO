@@ -1,6 +1,3 @@
-<div align="center">
-  <img src="koko-banner.png" alt="Koko Banner" width="100%" />
-
   <h1>Koko</h1>
   <p><strong>Your AI Workplace Assistant</strong></p>
   <p><em>"An assistant that works like an extension of you."</em></p>
@@ -130,3 +127,15 @@ Built with purpose by **Neural5** at **TheUdaraProject Hackathon**.
   <strong>Koko. By Neural5.</strong><br/>
   <em>She listens. She understands. She gets things done.</em>
 </div>
+
+
+2/06/2025
+Locking in goals for the next for 4 hrs
+
+Step 1 — Get /summarize working with Ollama        ~45 mins
+Step 2 — Add a basic frontend (ugly is fine)       ~30 mins
+Step 3 — Deploy live to Render (free subdomain)    ~30 mins
+Step 4 — Push to GitHub with real commits          ~15 mins
+Step 5 — Add CI with GitHub Actions                ~20 mins
+Step 6 — Write 2 unit tests (minimum to pass)      ~20 mins
+Step 7 — Record & post your video update           ~30 mins
