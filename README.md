@@ -1,3 +1,5 @@
+<div align="center">
+
   <h1>Koko</h1>
   <p><strong>Your AI Workplace Assistant</strong></p>
   <p><em>"An assistant that works like an extension of you."</em></p>
@@ -54,6 +56,81 @@ Follows up on tasks before deadlines hit, keeping you and your team accountable 
 
 <br/>
 
+## System Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                      USER LAYER                         │
+│      Zoom / Google Meet / Microsoft Teams / WhatsApp    │
+└──────────────────────────┬──────────────────────────────┘
+                           │ Audio / Voice Input
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                  FRONTEND — Next.js                     │
+│                                                         │
+│  • WebRTC — captures microphone audio from browser      │
+│  • Silero VAD — detects when user is speaking           │
+│  • Displays: Summaries, Action Items, Draft Emails      │
+└──────────────────────────┬──────────────────────────────┘
+                           │ Audio Chunks
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                  BACKEND — FastAPI                      │
+│                                                         │
+│  ┌───────────────┐     ┌─────────────────────────┐     │
+│  │ Whisper (STT) │     │     Groq LLM Engine      │     │
+│  │ Audio → Text  │────▶│  • Summarization         │     │
+│  └───────────────┘     │  • Action Items          │     │
+│                        │  • Email Drafting        │     │
+│  ┌───────────────┐     └─────────────────────────┘     │
+│  │  Kokoro TTS   │                                      │
+│  │ Text → Speech │     ┌─────────────────────────┐     │
+│  └───────────────┘     │     RAG / LLMIndex       │     │
+│                        │  Context from meetings   │     │
+│                        └─────────────────────────┘     │
+└──────────────────────────┬──────────────────────────────┘
+                           │ Structured Output
+                           ▼
+┌─────────────────────────────────────────────────────────┐
+│                     OUTPUT LAYER                        │
+│  • Meeting Summary                                      │
+│  • Action Items (with owners + deadlines)               │
+│  • Draft Follow-up Email                                │
+│  • Voice Response via Kokoro TTS                        │
+└─────────────────────────────────────────────────────────┘
+```
+
+<br/>
+
+## Tech Stack
+
+| Layer | Technology |
+| --- | --- |
+| Frontend | Next.js |
+| Audio Capture | WebRTC |
+| Voice Detection | Silero VAD |
+| Speech-to-Text | Whisper |
+| LLM Engine | Groq API |
+| Memory / Context | RAG / LLMIndex |
+| Text-to-Speech | Kokoro TTS |
+| Backend | FastAPI |
+| Database | SQLite |
+| Version Control | GitHub |
+
+<br/>
+
+## API Endpoints
+
+| Method | Endpoint | Description |
+| --- | --- | --- |
+| GET | `/health` | Server health check |
+| POST | `/summarize` | Transcript → meeting summary |
+| POST | `/action-items` | Transcript → task list |
+| POST | `/draft-email` | Transcript → follow-up email |
+| POST | `/transcribe` | Audio file → transcript |
+
+<br/>
+
 ## Integrations
 
 Koko works where you already work.
@@ -63,9 +140,7 @@ Koko works where you already work.
 | Zoom | ✅ |
 | Google Meet | ✅ |
 | Microsoft Teams | ✅ |
-| WhatsApp | ✅ | 
-
-You name it......
+| WhatsApp | ✅ |
 
 <br/>
 
@@ -81,10 +156,51 @@ You name it......
 
 <br/>
 
-## Why Koko?
+## Getting Started
 
+```bash
+# Clone the repo
+git clone https://github.com/neural5/koko.git
+cd koko-backend
 
-> Every professional deserves an assistant that feels like an extension of themselves.
+# Create and activate virtual environment
+python -m venv KOKO
+KOKO\Scripts\activate        # Windows
+source KOKO/bin/activate     # Mac/Linux
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Add your environment variables
+cp .env.example .env
+# Add your GROQ_API_KEY to .env
+
+# Run the server
+uvicorn main:app --reload
+```
+
+Then open `http://127.0.0.1:8000/docs` to test the API.
+
+<br/>
+
+## Project Structure
+
+```
+koko-backend/
+├── main.py              ← FastAPI app (all endpoints)
+├── requirements.txt     ← dependencies
+├── .env                 ← API keys (never commit this)
+├── .env.example         ← template for env variables
+├── .gitignore
+└── tests/
+    └── test_main.py     ← unit tests
+
+koko-frontend/
+├── app/
+│   └── page.jsx         ← main UI
+├── .env.local
+└── package.json
+```
 
 <br/>
 
@@ -109,8 +225,6 @@ You name it......
 
 Koko is in active early development, built by team **Neural5** as part of **TheUdaraProject Hackathon**.
 
-We are currently designing the core architecture, defining integrations, and shaping the user experience.
-
 > *"We're just getting started — and we can't wait to show you what she becomes."*
 
 <br/>
@@ -127,15 +241,3 @@ Built with purpose by **Neural5** at **TheUdaraProject Hackathon**.
   <strong>Koko. By Neural5.</strong><br/>
   <em>She listens. She understands. She gets things done.</em>
 </div>
-
-
-2/06/2025
-Locking in goals for the next for 4 hrs
-
-Step 1 — Get /summarize working with Ollama        ~45 mins
-Step 2 — Add a basic frontend (ugly is fine)       ~30 mins
-Step 3 — Deploy live to Render (free subdomain)    ~30 mins
-Step 4 — Push to GitHub with real commits          ~15 mins
-Step 5 — Add CI with GitHub Actions                ~20 mins
-Step 6 — Write 2 unit tests (minimum to pass)      ~20 mins
-Step 7 — Record & post your video update           ~30 mins
