@@ -15,7 +15,7 @@ class Meeting(BaseModel):           # Created a Class to represent the meeting d
 @app.post("/summarize")             #decorator to define a POST endpoint at /summarize, which will receive meeting data and return a summary.
 def summarize(meeting: Meeting):
     response = client.chat.completions.create(      # passes to Groq to process the meeting transcript and generate a summary. The model used is "llama3-8b-8192", which is a powerful language model suitable for summarization tasks. The messages parameter includes a system message to set the context for the assistant and a user message containing the meeting transcript to be summarized.
-        model="llama3-8b-8192",
+        model= "llama-3.3-70b-versatile",
         messages=[
             {
                 "role": "system",
