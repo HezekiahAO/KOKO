@@ -1,8 +1,12 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 from groq import Groq
 from dotenv import load_dotenv
 import os
+import whisper
+import tempfile
+import shutil
+
 # I switched to using the Groq Python SDK for better integration and ease of use. As Ollama was giving me some space issues.
 load_dotenv()
 
@@ -29,3 +33,16 @@ def summarize(meeting: Meeting):
     )                                                # passes to Groq to process the meeting transcript and generate a summary. The model used is "llama3-8b-8192", which is a powerful language model suitable for summarization tasks. The messages parameter includes a system message to set the context for the assistant and a user message containing the meeting transcript to be summarized.
      
     return {"summary": response.choices[0].message.content} # returns the generated summary as a JSON response, where the summary is extracted from the first choice in the response from Groq.
+
+
+
+model_whisper = whisper.load_model("base")
+
+@app.post("/transcribe")
+async def transcribe(audio: UploadFile = File(...)):
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+        shutil.copyfileobj(audio.file, tmp)
+        tmp_path = tmp.name
+
+    result = model_whisper.transcribe(tmp_path)
+    return {"transcript": result["text"]}
