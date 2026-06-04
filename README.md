@@ -129,10 +129,9 @@ Built with purpose by **Neural5** at **TheUdaraProject Hackathon**.
 </div>
 
 
-2/06/2026
-
+2/06/2025
 Locking in goals for the next for 4 hrs
-BluePrint
+
 Step 1 — Get /summarize working with Ollama        ~45 mins
 Step 2 — Add a basic frontend (ugly is fine)       ~30 mins
 Step 3 — Deploy live to Render (free subdomain)    ~30 mins
