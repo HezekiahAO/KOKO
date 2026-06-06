@@ -112,3 +112,45 @@ async def process_meeting(audio: UploadFile = File(...)):
     return {
         "Transcription": transcription,
         "Analysis": response.choices[0].message.content}
+
+
+
+
+# Additional endpoints for action item extraction and email drafting, following a similar pattern to the summarization endpoint. Each endpoint takes the meeting transcript as input and uses Groq to generate the desired output, whether it's a list of action items or a draft email.
+@app.get("/health")
+def health():
+    return {"status": "Koko is live"}
+
+@app.post("/action-items")
+def action_items(meeting: Meeting):
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are Koko, an AI workplace assistant. Extract action items from the meeting transcript. Return a clean numbered list with the owner and deadline for each task."
+            },
+            {
+                "role": "user",
+                "content": f"Extract action items from this transcript:\n{meeting.transcript}"
+            }
+        ]
+    )
+    return {"action_items": response.choices[0].message.content}
+
+@app.post("/draft-email")
+def draft_email(meeting: Meeting):
+    response = client.chat.completions.create(
+        model="llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are Koko, an AI workplace assistant. Draft a professional follow-up email based on the meeting transcript. Include subject line, body, and sign off."
+            },
+            {
+                "role": "user",
+                "content": f"Draft a follow-up email for this meeting:\n{meeting.transcript}"
+            }
+        ]
+    )
+    return {"draft_email": response.choices[0].message.content}
