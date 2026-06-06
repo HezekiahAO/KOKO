@@ -38,11 +38,77 @@ def summarize(meeting: Meeting):
 
 model_whisper = whisper.load_model("base")
 
+# Transcription
 @app.post("/transcribe")
 async def transcribe(audio: UploadFile = File(...)):
+    import imageio_ffmpeg
+    import subprocess
+    import numpy as np
+
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
         shutil.copyfileobj(audio.file, tmp)
         tmp_path = tmp.name
 
-    result = model_whisper.transcribe(tmp_path)
+    ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
+    converted_path = tmp_path + "_converted.wav"
+
+    subprocess.run([
+        ffmpeg_path, "-i", tmp_path,
+        "-ar", "16000", "-ac", "1", "-f", "s16le",
+        converted_path
+    ], check=True)
+
+    # Load audio as numpy array and pass directly to Whisper
+    audio_data = np.frombuffer(open(converted_path, "rb").read(), dtype=np.int16)
+    audio_float = audio_data.astype(np.float32) / 32768.0
+
+    result = model_whisper.transcribe(audio_float)
     return {"transcript": result["text"]}
+
+
+#Summarization
+@app.post("/process-meeting")
+async def process_meeting(audio: UploadFile = File(...)):
+    import imageio_ffmpeg
+    import subprocess
+    import numpy as np
+
+
+    #Convert audio
+    with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
+        shutil.copyfileobj(audio.file, tmp)
+        tmp_path = tmp.name
+
+    ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
+    converted_path = tmp_path + "_converted.wav"
+
+    subprocess.run([
+        ffmpeg_path, "-i", tmp_path,
+        "-ar", "16000", "-ac", "1", "-f", "s16le",
+        converted_path
+    ], check=True)
+
+
+    # Transcribe audio
+    audio_data = np.frombuffer(open(converted_path, "rb").read(), dtype=np.int16)
+    audio_float = audio_data.astype(np.float32) / 32768.0
+    transcription = model_whisper.transcribe(audio_float)["text"]
+
+    # Summarize with Groq
+    response = client.chat.completions.create(
+        model= "llama-3.3-70b-versatile",
+        messages=[
+            {
+                "role": "system",
+                "content": "You are Koko, an AI workplace assistant. Summarize meetings clearly and extract action items."
+            },
+            {
+                "role": "user",
+                "content": f"Summarize this meeting transcript:\n{transcription}"
+            }
+        ]
+    )
+
+    return {
+        "Transcription": transcription,
+        "Analysis": response.choices[0].message.content}
