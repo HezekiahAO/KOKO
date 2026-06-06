@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koko - AI-Powered Workplace Assistant</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --text-primary: #1f2937;
+            --text-secondary: #6b7280;
+            --bg-primary: #ffffff;
+            --bg-secondary: #f9fafb;
+            --border: #e5e7eb;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+            color: var(--text-primary);
+            background-color: var(--bg-primary);
+            line-height: 1.6;
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            font-weight: 700;
+        }
+
+        .tagline {
+            font-size: 1.25rem;
+            opacity: 0.95;
+            margin-bottom: 2rem;
+            max-width: 800px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background-color: white;
+            color: var(--primary);
+            padding: 0.75rem 2rem;
+            border-radius: 0.5rem;
+            text-decoration: none;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+
+        .cta-button:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        section {
+            margin-bottom: 4rem;
+        }
+
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
+            color: var(--text-primary);
+            text-align: center;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-bottom: 3rem;
+        }
+
+        .feature-card {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+        }
+
+        .feature-card h3 {
+            color: var(--primary);
+            margin-bottom: 0.75rem;
+            font-size: 1.25rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .tech-stack {
+            background: var(--bg-secondary);
+            padding: 2rem;
+            border-radius: 0.75rem;
+            border: 1px solid var(--border);
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .tech-category {
+            padding: 1.5rem;
+            background: white;
+            border-radius: 0.5rem;
+            border-left: 4px solid var(--primary);
+        }
+
+        .tech-category h4 {
+            color: var(--primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .tech-category p {
+            color: var(--text-primary);
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+
+        footer {
+            background-color: var(--text-primary);
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 4rem;
+        }
+
+        .intro-section {
+            background: linear-gradient(to right, var(--bg-secondary), white);
+            padding: 3rem;
+            border-radius: 0.75rem;
+            margin-bottom: 3rem;
+            border: 1px solid var(--border);
+        }
+
+        .intro-section p {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 768px) {
+            header h1 {
+                font-size: 2rem;
+            }
+
+            .container {
+                padding: 1rem;
+            }
+
+            section {
+                margin-bottom: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🤖 Koko</h1>
+        <p class="tagline">Your AI-Powered Workplace Assistant</p>
+        <button class="cta-button">Get Started</button>
+    </header>
+
+    <main class="container">
+        <section class="intro-section">
+            <p>
+                Koko is an AI-powered workplace assistant that eliminates the friction that comes after every meeting.
+                From missed action items to delayed follow-up emails — Koko handles it all, automatically, so you can stay
+                focused on the work that actually matters. She doesn't just take notes. She listens, understands context,
+                and takes action.
+            </p>
+        </section>
+
+        <section>
+            <h2>Key Features</h2>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>🎙️ Intelligent Listening</h3>
+                    <p>Captures audio during meetings and automatically detects when important information is shared.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📝 Automatic Notes</h3>
+                    <p>Transcribes conversations in real-time with advanced speech-to-text technology.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🧠 Context Understanding</h3>
+                    <p>Uses advanced LLM and retrieval-augmented generation to understand meeting context.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>✅ Action Item Tracking</h3>
+                    <p>Automatically extracts and tracks action items from conversations.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>📧 Smart Follow-ups</h3>
+                    <p>Generates and sends follow-up emails automatically, no more delays.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>🔊 Natural Voice Response</h3>
+                    <p>Communicates back through natural-sounding text-to-speech synthesis.</p>
+                </div>
+            </div>
+        </section>
+
+        <section>
+            <h2>Technology Stack</h2>
+            <div class="tech-stack">
+                <div class="tech-grid">
+                    <div class="tech-category">
+                        <h4>Frontend</h4>
+                        <p>Next.js</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Audio Capture</h4>
+                        <p>WebRTC</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Voice Detection</h4>
+                        <p>Silero VAD</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Speech-to-Text</h4>
+                        <p>Whisper</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>LLM Engine</h4>
+                        <p>Groq API</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Memory & Context</h4>
+                        <p>RAG / LLMIndex</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Text-to-Speech</h4>
+                        <p>Kokoro TTS</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Backend</h4>
+                        <p>FastAPI</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Database</h4>
+                        <p>SQLite</p>
+                    </div>
+                    <div class="tech-category">
+                        <h4>Version Control</h4>
+                        <p>GitHub</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>&copy; 2026 Koko - AI-Powered Workplace Assistant. All rights reserved.</p>
+    </footer>
+</body>
+</html>

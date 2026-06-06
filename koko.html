@@ -1,0 +1,472 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Koko - AI-Powered Workplace Assistant</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --primary-dark: #4338ca;
+            --primary-soft: #e8eaff;
+            --text-primary: #1f2554;
+            --text-secondary: #4d578f;
+            --bg-primary: #f4f6ff;
+            --surface: #ffffff;
+            --surface-soft: #eef1ff;
+            --border: #dfe5ff;
+            --success: #7c3aed;
+            --shadow: 0 14px 36px rgba(67, 56, 202, 0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", sans-serif;
+            color: var(--text-primary);
+            background: radial-gradient(circle at 8% 5%, #e8ecff 0, #f4f6ff 45%), var(--bg-primary);
+            line-height: 1.6;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        .container {
+            width: min(1120px, 92vw);
+            margin: 0 auto;
+        }
+
+        .top-nav {
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            backdrop-filter: blur(8px);
+            background: rgba(244, 246, 255, 0.9);
+            border-bottom: 1px solid var(--border);
+        }
+
+        .nav-inner {
+            height: 68px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .brand {
+            font-size: 1.2rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 1.2rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .nav-links a {
+            padding: 0.35rem 0.55rem;
+            border-radius: 0.45rem;
+            transition: background-color 0.18s ease, color 0.18s ease;
+        }
+
+        .nav-links a:hover {
+            background: var(--surface-soft);
+            color: var(--text-primary);
+        }
+
+        .hero {
+            padding: 4rem 0 3rem;
+        }
+
+        .hero-grid {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 999px;
+            background: var(--primary-soft);
+            color: var(--primary-dark);
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+
+        h1 {
+            font-size: clamp(2rem, 5vw, 3.2rem);
+            line-height: 1.1;
+            margin-bottom: 1rem;
+            letter-spacing: -0.02em;
+        }
+
+        .hero p {
+            color: var(--text-secondary);
+            font-size: 1.05rem;
+            max-width: 62ch;
+        }
+
+        .cta-row {
+            margin-top: 1.6rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+        }
+
+        .btn {
+            border: 0;
+            padding: 0.78rem 1.2rem;
+            border-radius: 0.65rem;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.95rem;
+            transition: transform 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: #fff;
+            box-shadow: 0 10px 20px rgba(99, 102, 241, 0.28);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(99, 102, 241, 0.34);
+        }
+
+        .btn-secondary {
+            background: var(--surface);
+            color: var(--text-primary);
+            border: 1px solid var(--border);
+        }
+
+        .btn-secondary:hover {
+            transform: translateY(-1px);
+            background: var(--surface-soft);
+        }
+
+        .brand:focus-visible,
+        .nav-links a:focus-visible,
+        .btn:focus-visible {
+            outline: 3px solid rgba(99, 102, 241, 0.35);
+            outline-offset: 2px;
+        }
+
+        .hero-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 1rem;
+            padding: 1.2rem;
+            box-shadow: var(--shadow);
+        }
+
+        .hero-card h3 {
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .check-list {
+            list-style: none;
+            display: grid;
+            gap: 0.6rem;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+        }
+
+        .check-list li {
+            display: flex;
+            gap: 0.55rem;
+            align-items: flex-start;
+        }
+
+        .check-list span {
+            color: var(--success);
+            font-weight: 700;
+            line-height: 1.3;
+        }
+
+        section {
+            margin: 2.5rem 0;
+        }
+
+        .section-header {
+            margin-bottom: 1.25rem;
+        }
+
+        .section-header h2 {
+            font-size: 1.8rem;
+            line-height: 1.2;
+            margin-bottom: 0.4rem;
+        }
+
+        .section-header p {
+            color: var(--text-secondary);
+            max-width: 70ch;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .stat {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.85rem;
+            padding: 1rem;
+        }
+
+        .stat strong {
+            display: block;
+            font-size: 1.4rem;
+            color: var(--primary-dark);
+            margin-bottom: 0.2rem;
+        }
+
+        .stat span {
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 1rem;
+        }
+
+        .feature-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 0.9rem;
+            padding: 1.1rem;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 24px rgba(17, 24, 39, 0.07);
+        }
+
+        .feature-card h3 {
+            color: var(--primary-dark);
+            margin-bottom: 0.5rem;
+            font-size: 1.05rem;
+        }
+
+        .feature-card p {
+            color: var(--text-secondary);
+            font-size: 0.93rem;
+        }
+
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.9rem;
+        }
+
+        .tech-category {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            padding: 0.9rem 1rem;
+            border: 1px solid var(--border);
+            border-radius: 0.75rem;
+            background: var(--surface);
+            transition: transform 0.18s ease, box-shadow 0.18s ease;
+        }
+
+        .tech-category:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 18px rgba(17, 24, 39, 0.06);
+        }
+
+        .tech-category h4 {
+            color: var(--text-secondary);
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            font-weight: 600;
+        }
+
+        .tech-category p {
+            color: var(--text-primary);
+            font-size: 0.95rem;
+            font-weight: 600;
+            text-align: right;
+        }
+
+        footer {
+            margin-top: 3rem;
+            border-top: 1px solid var(--border);
+            padding: 1.4rem 0 2rem;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 0.9rem;
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            html {
+                scroll-behavior: auto;
+            }
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+                scroll-behavior: auto !important;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .nav-inner {
+                height: 60px;
+            }
+
+            .nav-links {
+                display: none;
+            }
+
+            .hero {
+                padding-top: 2rem;
+            }
+
+            .hero-grid,
+            .features,
+            .tech-grid,
+            .stats {
+                grid-template-columns: 1fr;
+            }
+
+            .tech-category {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .tech-category p {
+                text-align: left;
+            }
+        }
+    </style>
+</head>
+<body>
+    <nav class="top-nav">
+        <div class="container nav-inner">
+            <a href="#" class="brand">Koko</a>
+            <div class="nav-links">
+                <a href="#about">About</a>
+                <a href="#features">Features</a>
+            
+            </div>
+        </div>
+    </nav>
+
+    <main class="container">
+        <section class="hero" id="about">
+            <div class="hero-grid">
+                <div>
+                    <span class="pill">AI Workplace Assistant</span>
+                    <h1>Turn every meeting into clear, automatic follow-through.</h1>
+                    <p>
+                        Koko is an AI-powered workplace assistant that eliminates the friction that comes after every meeting.
+                        From missed action items to delayed follow-up emails — Koko handles it all automatically, so you stay focused on meaningful work.
+                        She doesn’t just take notes. She listens, understands context, and takes action.
+                    </p>
+                    <div class="cta-row">
+                        <a href="koko-landing.html" class="btn btn-primary" role="button">Start with Koko</a>
+                        <button class="btn btn-secondary">See Product Overview</button>
+                    </div>
+                </div>
+
+                <aside class="hero-card" aria-label="Koko summary card">
+                    <h3>What Koko automates after every meeting</h3>
+                    <ul class="check-list">
+                        <li><span>✓</span> Detects key moments and extracts action items</li>
+                        <li><span>✓</span> Creates concise notes with context</li>
+                        <li><span>✓</span> Drafts smart follow-up messages automatically</li>
+                        <li><span>✓</span> Maintains memory across conversations</li>
+                    </ul>
+                </aside>
+            </div>
+        </section>
+
+        <section>
+            <div class="stats">
+                <div class="stat">
+                    <strong>0 missed</strong>
+                    <span>Action items left behind</span>
+                </div>
+                <div class="stat">
+                    <strong>Faster follow-up</strong>
+                    <span>Emails drafted automatically</span>
+                </div>
+                <div class="stat">
+                    <strong>Always contextual</strong>
+                    <span>Memory informed by retrieval</span>
+                </div>
+            </div>
+        </section>
+
+        <section id="features">
+            <div class="section-header">
+                <h2>Key Features</h2>
+                <p>Every feature is designed to remove manual post-meeting work and improve team execution speed.</p>
+            </div>
+            <div class="features">
+                <div class="feature-card">
+                    <h3>Intelligent Listening</h3>
+                    <p>Captures audio during meetings and automatically detects when important information is shared.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Automatic Notes</h3>
+                    <p>Transcribes conversations in real-time with advanced speech-to-text technology.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Context Understanding</h3>
+                    <p>Uses advanced LLM and retrieval-augmented generation to understand meeting context.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Action Item Tracking</h3>
+                    <p>Automatically extracts and tracks action items from conversations.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Smart Follow-ups</h3>
+                    <p>Generates and sends follow-up emails automatically, no more delays.</p>
+                </div>
+                <div class="feature-card">
+                    <h3>Natural Voice Response</h3>
+                    <p>Communicates back through natural-sounding text-to-speech synthesis.</p>
+                </div>
+            </div>
+        </section>
+
+        
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2026 Koko — AI-Powered Workplace Assistant</p>
+        </div>
+    </footer>
+</body>
+</html>
