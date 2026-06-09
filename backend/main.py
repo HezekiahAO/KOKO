@@ -65,16 +65,13 @@ async def transcribe(audio: UploadFile = File(...)):
     result = model_whisper.transcribe(audio_float)
     return {"transcript": result["text"]}
 
-
-#Summarization
 @app.post("/process-meeting")
 async def process_meeting(audio: UploadFile = File(...)):
     import imageio_ffmpeg
     import subprocess
     import numpy as np
 
-
-    #Convert audio
+    # Convert audio
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
         shutil.copyfileobj(audio.file, tmp)
         tmp_path = tmp.name
@@ -88,55 +85,38 @@ async def process_meeting(audio: UploadFile = File(...)):
         converted_path
     ], check=True)
 
-
-    # Transcribe audio
+    # Transcribe
     audio_data = np.frombuffer(open(converted_path, "rb").read(), dtype=np.int16)
     audio_float = audio_data.astype(np.float32) / 32768.0
-    transcription = model_whisper.transcribe(audio_float)["text"]
+    transcript = model_whisper.transcribe(audio_float)["text"]
 
-    # Summarize with Groq
-    response = client.chat.completions.create(
-        model= "llama-3.3-70b-versatile",
-        messages=[
-            {
-                "role": "system",
-                "content": "You are Koko, an AI workplace assistant. Summarize meetings clearly and extract action items."
-            },
-            {
-                "role": "user",
-                "content": f"Summarize this meeting transcript:\n{transcription}"
-            }
-        ]
-    )
-
-    return {
-        "Transcription": transcription,
-        "Analysis": response.choices[0].message.content}
-
-
-
-
-# Additional endpoints for action item extraction and email drafting, following a similar pattern to the summarization endpoint. Each endpoint takes the meeting transcript as input and uses Groq to generate the desired output, whether it's a list of action items or a draft email.
-@app.get("/health")
-def health():
-    return {"status": "Koko is live"}
-
-@app.post("/action-items")
-def action_items(meeting: Meeting):
+    # Analyse with Groq
     response = client.chat.completions.create(
         model="llama-3.3-70b-versatile",
         messages=[
             {
                 "role": "system",
-                "content": "You are Koko, an AI workplace assistant. Extract action items from the meeting transcript. Return a clean numbered list with the owner and deadline for each task."
+                "content": """You are Koko, an AI workplace assistant. 
+                Given a meeting transcript, return ONLY a valid JSON object with exactly these three fields:
+                {
+                  "summary": "a clear summary of the meeting",
+                  "action_items": ["item 1", "item 2", "item 3"],
+                  "draft_email": "a professional follow-up email"
+                }
+                Return nothing else. No explanation. Just the JSON."""
             },
             {
                 "role": "user",
-                "content": f"Extract action items from this transcript:\n{meeting.transcript}"
+                "content": f"Process this meeting transcript:\n{transcript}"
             }
         ]
     )
-    return {"action_items": response.choices[0].message.content}
+
+    return {
+        "transcript": transcript,
+        "analysis": response.choices[0].message.content
+    }
+
 
 @app.post("/draft-email")
 def draft_email(meeting: Meeting):
