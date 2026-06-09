@@ -1,0 +1,522 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>                                  / This is does the work(exec) 
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Koko — Process Meeting</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --ink:#0e0f1a;
+  --ink2:#3d3f5c;
+  --ink3:#7b7fa8;
+  --surface:#ffffff;
+  --surface2:#f4f5fb;
+  --surface3:#eaecf8;
+  --accent:#5b5ef4;
+  --accent2:#8b8df8;
+  --accent-glow:rgba(91,94,244,0.18);
+  --border:#dfe2f5;
+  --success:#22c55e;
+  --radius:14px;
+  --shadow:0 8px 32px rgba(14,15,26,0.08);
+}
+body{font-family:'DM Sans',sans-serif;background:var(--surface2);color:var(--ink);min-height:100vh}
+
+/* NAV */
+nav{
+  position:sticky;top:0;z-index:50;
+  background:rgba(244,245,251,0.85);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+  height:64px;display:flex;align-items:center;justify-content:space-between;
+}
+.nav-brand{font-family:'Syne',sans-serif;font-weight:800;font-size:1.25rem;color:var(--ink);text-decoration:none}
+.nav-links{display:flex;gap:0.5rem}
+.nav-links a{
+  font-size:0.9rem;color:var(--ink2);text-decoration:none;
+  padding:0.4rem 0.8rem;border-radius:8px;
+  transition:background 0.15s,color 0.15s;
+}
+.nav-links a:hover{background:var(--surface3);color:var(--ink)}
+.nav-links a.active{background:var(--accent);color:#fff}
+
+/* LAYOUT */
+.page{max-width:900px;margin:0 auto;padding:2.5rem 1.5rem 4rem}
+
+/* HERO */
+.page-hero{margin-bottom:2.5rem}
+.page-hero .eyebrow{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  font-size:0.8rem;font-weight:600;letter-spacing:0.08em;text-transform:uppercase;
+  color:var(--accent);background:rgba(91,94,244,0.08);
+  padding:0.3rem 0.75rem;border-radius:999px;margin-bottom:0.75rem;
+}
+.page-hero h1{
+  font-family:'Syne',sans-serif;font-size:clamp(1.8rem,4vw,2.6rem);
+  font-weight:800;line-height:1.1;letter-spacing:-0.02em;color:var(--ink);
+  margin-bottom:0.6rem;
+}
+.page-hero p{color:var(--ink2);font-size:1.05rem;max-width:55ch}
+
+/* UPLOAD CARD */
+.upload-card{
+  background:var(--surface);border:1.5px dashed var(--border);
+  border-radius:var(--radius);padding:2.5rem;
+  transition:border-color 0.2s,background 0.2s;
+  cursor:pointer;position:relative;
+  margin-bottom:1.25rem;
+}
+.upload-card:hover,.upload-card.dragover{
+  border-color:var(--accent);background:rgba(91,94,244,0.03);
+}
+.upload-inner{display:flex;flex-direction:column;align-items:center;gap:0.75rem;text-align:center}
+.upload-icon{
+  width:56px;height:56px;border-radius:14px;
+  background:rgba(91,94,244,0.1);
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.6rem;
+}
+.upload-inner h3{font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--ink)}
+.upload-inner p{color:var(--ink3);font-size:0.9rem}
+.upload-inner .formats{
+  display:flex;gap:0.4rem;flex-wrap:wrap;justify-content:center;
+}
+.format-tag{
+  font-size:0.75rem;font-weight:600;
+  padding:0.2rem 0.5rem;border-radius:5px;
+  background:var(--surface3);color:var(--ink2);
+}
+#fileInput{display:none}
+.file-chosen{
+  display:none;align-items:center;gap:0.75rem;
+  background:rgba(91,94,244,0.06);border:1px solid var(--accent);
+  border-radius:10px;padding:0.75rem 1rem;margin-top:0.5rem;width:100%;
+}
+.file-chosen .file-icon{font-size:1.4rem}
+.file-chosen .file-name{font-weight:600;font-size:0.95rem;color:var(--ink)}
+.file-chosen .file-size{font-size:0.82rem;color:var(--ink3)}
+.file-chosen .remove-btn{
+  margin-left:auto;background:none;border:none;
+  color:var(--ink3);cursor:pointer;font-size:1.1rem;
+  padding:0.2rem;border-radius:5px;
+  transition:color 0.15s;
+}
+.file-chosen .remove-btn:hover{color:#ef4444}
+
+/* PROCESS BTN */
+.process-btn{
+  width:100%;padding:1rem;
+  background:linear-gradient(135deg,var(--accent) 0%,#4347e8 100%);
+  color:#fff;border:none;border-radius:var(--radius);
+  font-family:'Syne',sans-serif;font-weight:700;font-size:1rem;
+  cursor:pointer;letter-spacing:0.01em;
+  box-shadow:0 8px 24px rgba(91,94,244,0.3);
+  transition:transform 0.15s,box-shadow 0.15s,opacity 0.15s;
+  display:flex;align-items:center;justify-content:center;gap:0.5rem;
+}
+.process-btn:hover:not(:disabled){transform:translateY(-1px);box-shadow:0 12px 28px rgba(91,94,244,0.38)}
+.process-btn:disabled{opacity:0.55;cursor:not-allowed;transform:none}
+
+/* LOADING */
+.loading-state{display:none;text-align:center;padding:3rem 2rem}
+.spinner{
+  width:44px;height:44px;border-radius:50%;
+  border:3px solid var(--surface3);
+  border-top-color:var(--accent);
+  animation:spin 0.8s linear infinite;
+  margin:0 auto 1rem;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-state p{color:var(--ink2);font-size:0.95rem}
+.loading-steps{display:flex;flex-direction:column;gap:0.5rem;margin-top:1.25rem;text-align:left;max-width:280px;margin-left:auto;margin-right:auto}
+.loading-step{
+  display:flex;align-items:center;gap:0.6rem;
+  font-size:0.88rem;color:var(--ink3);
+  transition:color 0.3s;
+}
+.loading-step.active{color:var(--accent);font-weight:500}
+.loading-step.done{color:var(--success)}
+.step-dot{
+  width:8px;height:8px;border-radius:50%;
+  background:var(--border);flex-shrink:0;
+  transition:background 0.3s;
+}
+.loading-step.active .step-dot{background:var(--accent)}
+.loading-step.done .step-dot{background:var(--success)}
+
+/* RESULTS */
+.results{display:none;margin-top:2rem}
+.results-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1.5rem;flex-wrap:wrap;gap:0.75rem;
+}
+.results-header h2{
+  font-family:'Syne',sans-serif;font-size:1.4rem;font-weight:800;color:var(--ink)
+}
+.success-badge{
+  display:inline-flex;align-items:center;gap:0.4rem;
+  font-size:0.82rem;font-weight:600;
+  color:var(--success);background:rgba(34,197,94,0.1);
+  padding:0.3rem 0.75rem;border-radius:999px;
+}
+
+.result-tabs{
+  display:flex;gap:0.4rem;border-bottom:2px solid var(--border);
+  margin-bottom:1.5rem;overflow-x:auto;
+}
+.tab-btn{
+  background:none;border:none;cursor:pointer;
+  font-family:'DM Sans',sans-serif;font-size:0.9rem;font-weight:500;
+  color:var(--ink3);padding:0.6rem 1rem;
+  border-bottom:2px solid transparent;margin-bottom:-2px;
+  transition:color 0.15s,border-color 0.15s;white-space:nowrap;
+}
+.tab-btn.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+.tab-btn:hover:not(.active){color:var(--ink2)}
+
+.tab-panel{display:none}
+.tab-panel.active{display:block}
+
+.result-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--radius);overflow:hidden;
+}
+.result-box-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0.9rem 1.1rem;border-bottom:1px solid var(--border);
+  background:var(--surface2);
+}
+.result-box-header span{font-size:0.85rem;font-weight:600;color:var(--ink2)}
+.copy-btn{
+  background:none;border:1px solid var(--border);border-radius:7px;
+  padding:0.3rem 0.7rem;font-size:0.8rem;font-weight:500;
+  color:var(--ink3);cursor:pointer;
+  transition:background 0.15s,color 0.15s;display:flex;align-items:center;gap:0.3rem;
+}
+.copy-btn:hover{background:var(--surface3);color:var(--ink)}
+.copy-btn.copied{color:var(--success);border-color:var(--success)}
+.result-content{
+  padding:1.25rem;font-size:0.93rem;line-height:1.75;
+  color:var(--ink2);white-space:pre-wrap;max-height:400px;overflow-y:auto;
+}
+
+/* RESET */
+.reset-btn{
+  background:none;border:1px solid var(--border);
+  border-radius:var(--radius);padding:0.7rem 1.2rem;
+  font-family:'Syne',sans-serif;font-weight:600;font-size:0.9rem;
+  color:var(--ink2);cursor:pointer;
+  transition:background 0.15s,color 0.15s;margin-top:1.5rem;
+}
+.reset-btn:hover{background:var(--surface3);color:var(--ink)}
+
+/* ERROR */
+.error-box{
+  display:none;background:rgba(239,68,68,0.06);
+  border:1px solid rgba(239,68,68,0.25);
+  border-radius:var(--radius);padding:1rem 1.25rem;
+  color:#dc2626;font-size:0.9rem;margin-top:1rem;
+  display:flex;align-items:flex-start;gap:0.6rem;
+}
+.error-box.visible{display:flex}
+
+@media(max-width:600px){
+  nav{padding:0 1rem}
+  .page{padding:1.5rem 1rem 3rem}
+  .upload-card{padding:1.75rem 1.25rem}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <a href="koko.html" class="nav-brand">Koko</a>
+  <div class="nav-links">
+    <a href="koko.html">Home</a>
+    <a href="koko-app.html" class="active">Process Meeting</a>
+  </div>
+</nav>
+
+<div class="page">
+
+  <div class="page-hero">
+    <div class="eyebrow">🎙️ Meeting Processor</div>
+    <h1>Upload your meeting.<br/>Koko handles the rest.</h1>
+    <p>Drop in any audio file and Koko will transcribe it, summarize the key points, extract action items, and draft your follow-up email — automatically.</p>
+  </div>
+
+  <!-- UPLOAD -->
+  <div class="upload-card" id="dropZone" onclick="document.getElementById('fileInput').click()">
+    <div class="upload-inner">
+      <div class="upload-icon">🎧</div>
+      <h3>Drop your meeting audio here</h3>
+      <p>or click to browse files</p>
+      <div class="formats">
+        <span class="format-tag">MP3</span>
+        <span class="format-tag">WAV</span>
+        <span class="format-tag">M4A</span>
+        <span class="format-tag">MP4</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="file-chosen" id="fileChosen">
+    <div class="file-icon">🎵</div>
+    <div>
+      <div class="file-name" id="fileName">—</div>
+      <div class="file-size" id="fileSize">—</div>
+    </div>
+    <button class="remove-btn" id="removeBtn" onclick="removeFile(event)">✕</button>
+  </div>
+
+  <input type="file" id="fileInput" accept="audio/*,.mp3,.wav,.m4a,.mp4"/>
+
+  <div class="error-box" id="errorBox">
+    <span>⚠️</span>
+    <span id="errorMsg">Something went wrong. Please try again.</span>
+  </div>
+
+  <br/>
+  <button class="process-btn" id="processBtn" onclick="processMeeting()" disabled>
+    <span>⚡</span> Process Meeting
+  </button>
+
+  <!-- LOADING -->
+  <div class="loading-state" id="loadingState">
+    <div class="spinner"></div>
+    <p>Koko is working on your meeting…</p>
+    <div class="loading-steps">
+      <div class="loading-step active" id="step1"><div class="step-dot"></div> Uploading audio file</div>
+      <div class="loading-step" id="step2"><div class="step-dot"></div> Transcribing with Whisper</div>
+      <div class="loading-step" id="step3"><div class="step-dot"></div> Analysing with Groq AI</div>
+      <div class="loading-step" id="step4"><div class="step-dot"></div> Generating your outputs</div>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="results" id="results">
+    <div class="results-header">
+      <h2>Meeting Processed ✓</h2>
+      <span class="success-badge">✓ Koko is done</span>
+    </div>
+
+    <div class="result-tabs">
+      <button class="tab-btn active" onclick="switchTab('transcript',this)">📝 Transcript</button>
+      <button class="tab-btn" onclick="switchTab('summary',this)">📋 Summary</button>
+      <button class="tab-btn" onclick="switchTab('actions',this)">✅ Action Items</button>
+      <button class="tab-btn" onclick="switchTab('email',this)">✉️ Draft Email</button>
+    </div>
+
+    <!-- Transcript -->
+    <div class="tab-panel active" id="tab-transcript">
+      <div class="result-box">
+        <div class="result-box-header">
+          <span>Full Transcript</span>
+          <button class="copy-btn" onclick="copyContent('transcriptContent',this)">📋 Copy</button>
+        </div>
+        <div class="result-content" id="transcriptContent"></div>
+      </div>
+    </div>
+
+    <!-- Summary -->
+    <div class="tab-panel" id="tab-summary">
+      <div class="result-box">
+        <div class="result-box-header">
+          <span>Meeting Summary</span>
+          <button class="copy-btn" onclick="copyContent('summaryContent',this)">📋 Copy</button>
+        </div>
+        <div class="result-content" id="summaryContent"></div>
+      </div>
+    </div>
+
+    <!-- Action Items -->
+    <div class="tab-panel" id="tab-actions">
+      <div class="result-box">
+        <div class="result-box-header">
+          <span>Action Items</span>
+          <button class="copy-btn" onclick="copyContent('actionsContent',this)">📋 Copy</button>
+        </div>
+        <div class="result-content" id="actionsContent"></div>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="tab-panel" id="tab-email">
+      <div class="result-box">
+        <div class="result-box-header">
+          <span>Draft Follow-up Email</span>
+          <button class="copy-btn" onclick="copyContent('emailContent',this)">📋 Copy</button>
+        </div>
+        <div class="result-content" id="emailContent"></div>
+      </div>
+    </div>
+
+    <button class="reset-btn" onclick="resetApp()">↩ Process another meeting</button>
+  </div>
+
+</div>
+
+<script>
+const API_BASE = "http://127.0.0.1:8000";
+let selectedFile = null;
+
+// File input
+document.getElementById('fileInput').addEventListener('change', e => {
+  if(e.target.files[0]) handleFile(e.target.files[0]);
+});
+
+// Drag and drop
+const dropZone = document.getElementById('dropZone');
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+dropZone.addEventListener('drop', e => {
+  e.preventDefault();
+  dropZone.classList.remove('dragover');
+  if(e.dataTransfer.files[0]) handleFile(e.dataTransfer.files[0]);
+});
+
+function handleFile(file) {
+  selectedFile = file;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = (file.size / (1024*1024)).toFixed(2) + ' MB';
+  document.getElementById('fileChosen').style.display = 'flex';
+  document.getElementById('processBtn').disabled = false;
+  hideError();
+}
+
+function removeFile(e) {
+  e.stopPropagation();
+  selectedFile = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileChosen').style.display = 'none';
+  document.getElementById('processBtn').disabled = true;
+}
+
+function showError(msg) {
+  const box = document.getElementById('errorBox');
+  document.getElementById('errorMsg').textContent = msg;
+  box.classList.add('visible');
+}
+
+function hideError() {
+  document.getElementById('errorBox').classList.remove('visible');
+}
+
+// Loading steps animation
+function animateSteps() {
+  const steps = ['step1','step2','step3','step4'];
+  let i = 0;
+  const interval = setInterval(() => {
+    if(i > 0) {
+      document.getElementById(steps[i-1]).classList.remove('active');
+      document.getElementById(steps[i-1]).classList.add('done');
+    }
+    if(i < steps.length) {
+      document.getElementById(steps[i]).classList.add('active');
+      i++;
+    } else {
+      clearInterval(interval);
+    }
+  }, 2500);
+  return interval;
+}
+
+async function processMeeting() {
+  if(!selectedFile) return;
+
+  hideError();
+  document.getElementById('processBtn').style.display = 'none';
+  document.getElementById('loadingState').style.display = 'block';
+  document.getElementById('results').style.display = 'none';
+
+  // Reset steps
+  ['step1','step2','step3','step4'].forEach(s => {
+    document.getElementById(s).classList.remove('active','done');
+  });
+  document.getElementById('step1').classList.add('active');
+  const stepInterval = animateSteps();
+
+  try {
+    const formData = new FormData();
+    formData.append('audio', selectedFile);
+
+    const response = await fetch(`${API_BASE}/process-meeting`, {
+      method: 'POST',
+      body: formData
+    });
+
+    clearInterval(stepInterval);
+
+    if(!response.ok) {
+      const err = await response.json().catch(() => ({}));
+      throw new Error(err.detail || `Server error: ${response.status}`);
+    }
+
+    const data = await response.json();
+
+    // Parse the analysis JSON from Groq
+    let summary = '', actionItems = '', draftEmail = '';
+    try {
+      const analysis = JSON.parse(data.analysis);
+      summary = analysis.summary || data.analysis;
+      actionItems = Array.isArray(analysis.action_items)
+        ? analysis.action_items.map((item, i) => `${i+1}. ${item}`).join('\n')
+        : (analysis.action_items || 'No action items found.');
+      draftEmail = analysis.draft_email || 'No draft email generated.';
+    } catch {
+      summary = data.analysis;
+      actionItems = 'Could not parse action items.';
+      draftEmail = 'Could not parse draft email.';
+    }
+
+    document.getElementById('transcriptContent').textContent = data.transcript || 'No transcript available.';
+    document.getElementById('summaryContent').textContent = summary;
+    document.getElementById('actionsContent').textContent = actionItems;
+    document.getElementById('emailContent').textContent = draftEmail;
+
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('results').style.display = 'block';
+
+  } catch(err) {
+    clearInterval(stepInterval);
+    document.getElementById('loadingState').style.display = 'none';
+    document.getElementById('processBtn').style.display = 'flex';
+    showError(err.message || 'Something went wrong. Is your backend running?');
+  }
+}
+
+function switchTab(name, btn) {
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  btn.classList.add('active');
+}
+
+function copyContent(id, btn) {
+  const text = document.getElementById(id).textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = '✓ Copied';
+    btn.classList.add('copied');
+    setTimeout(() => {
+      btn.textContent = '📋 Copy';
+      btn.classList.remove('copied');
+    }, 2000);
+  });
+}
+
+function resetApp() {
+  selectedFile = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileChosen').style.display = 'none';
+  document.getElementById('processBtn').disabled = true;
+  document.getElementById('processBtn').style.display = 'flex';
+  document.getElementById('results').style.display = 'none';
+  hideError();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>
