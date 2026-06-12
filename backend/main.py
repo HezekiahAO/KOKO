@@ -2,8 +2,7 @@ from fastapi import FastAPI, UploadFile, File
 from pydantic import BaseModel
 from groq import Groq
 from dotenv import load_dotenv
-import os
-import whisper
+import os       
 import tempfile
 import shutil
 from dotenv import load_dotenv
@@ -46,60 +45,35 @@ def summarize(meeting: Meeting):
     return {"summary": response.choices[0].message.content} # returns the generated summary as a JSON response, where the summary is extracted from the first choice in the response from Groq.
 
 
-
-model_whisper = whisper.load_model("base")
-
-# Transcription
-@app.post("/transcribe")
+@app.post("/transcribe")                    # defines a POST endpoint at /transcribe, which will receive
 async def transcribe(audio: UploadFile = File(...)):
-    import imageio_ffmpeg
-    import subprocess
-    import numpy as np
-
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
         shutil.copyfileobj(audio.file, tmp)
         tmp_path = tmp.name
 
-    ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
-    converted_path = tmp_path + "_converted.wav"
+    with open(tmp_path, "rb") as audio_file:
+        transcription = client.audio.transcriptions.create(
+            file=audio_file,
+            model="whisper-large-v3",
+        )
 
-    subprocess.run([
-        ffmpeg_path, "-i", tmp_path,
-        "-ar", "16000", "-ac", "1", "-f", "s16le",
-        converted_path
-    ], check=True)
+    os.remove(tmp_path)
+    return {"transcript": transcription.text}
 
-    # Load audio as numpy array and pass directly to Whisper
-    audio_data = np.frombuffer(open(converted_path, "rb").read(), dtype=np.int16)
-    audio_float = audio_data.astype(np.float32) / 32768.0
-
-    result = model_whisper.transcribe(audio_float)
-    return {"transcript": result["text"]}
-
-@app.post("/process-meeting")
+@app.post("/process-meeting")                   # defines a POST endpoint at /process-meeting, which will receive an audio file
 async def process_meeting(audio: UploadFile = File(...)):
-    import imageio_ffmpeg
-    import subprocess
-    import numpy as np
-
-    # Convert audio
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav") as tmp:
         shutil.copyfileobj(audio.file, tmp)
         tmp_path = tmp.name
 
-    ffmpeg_path = imageio_ffmpeg.get_ffmpeg_exe()
-    converted_path = tmp_path + "_converted.wav"
-
-    subprocess.run([
-        ffmpeg_path, "-i", tmp_path,
-        "-ar", "16000", "-ac", "1", "-f", "s16le",
-        converted_path
-    ], check=True)
-
-    # Transcribe
-    audio_data = np.frombuffer(open(converted_path, "rb").read(), dtype=np.int16)
-    audio_float = audio_data.astype(np.float32) / 32768.0
-    transcript = model_whisper.transcribe(audio_float)["text"]
+    with open(tmp_path, "rb") as audio_file:
+        transcription = client.audio.transcriptions.create(
+            file=audio_file,
+            model="whisper-large-v3",
+        )
+    
+    transcript = transcription.text
+    os.remove(tmp_path)
 
     # Analyse with Groq
     response = client.chat.completions.create(
