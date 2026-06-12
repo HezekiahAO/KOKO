@@ -6,12 +6,23 @@ import os
 import whisper
 import tempfile
 import shutil
+from dotenv import load_dotenv
+load_dotenv()
+
 
 # I switched to using the Groq Python SDK for better integration and ease of use. As Ollama was giving me some space issues.
 load_dotenv()
 
 app = FastAPI()
-client = Groq(api_key=os.getenv("GROQ_API_KEY"))  # Connected to Groq API using the API key from env so that we can access the Groq models.
+client: Groq = None  # type: ignore
+
+@app.on_event("startup")
+async def startup_event():
+    global client
+    client = Groq(api_key=os.getenv("GROQ_API_KEY"))     # This way the Groq client only gets created after the app starts and environment variables are already loaded.
+
+
+
 
 class Meeting(BaseModel):           # Created a Class to represent the meeting data structure, which includes a transcript field to hold the meeting transcript that we want to summarize.
     transcript: str                # Data type of the transcript
