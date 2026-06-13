@@ -7,12 +7,24 @@ import tempfile
 import shutil
 from dotenv import load_dotenv
 load_dotenv()
+from fastapi.middleware.cors import CORSMiddleware
 
 
 # I switched to using the Groq Python SDK for better integration and ease of use. As Ollama was giving me some space issues.
 load_dotenv()
 
 app = FastAPI()
+
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
 client: Groq = None  # type: ignore
 
 @app.on_event("startup")
