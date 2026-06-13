@@ -52,7 +52,10 @@ Drafts your follow-up emails automatically based on what was discussed. Review, 
 Extracts every task, deadline, and commitment from the conversation and assigns them clearly so nothing falls through the cracks.
 
 **🔔 Smart Reminders**
-Follows up on tasks before deadlines hit, keeping you and your team accountable without the back-and-forth.
+Sends reminders when deadlines are approaching automatically, without you having to chase anyone.
+
+**🤖 Agentic Capabilities (Coming Soon)**
+Koko is being built to act autonomously not just generate outputs, but follow through on them. The web MVP is the foundation. The agent is the goal.
 
 <br/>
 
@@ -66,11 +69,11 @@ Follows up on tasks before deadlines hit, keeping you and your team accountable 
                            │ Audio / Voice Input
                            ▼
 ┌─────────────────────────────────────────────────────────┐
-│                  FRONTEND — Next.js                     │
+│                  FRONTEND — HTML/CSS/JS                 │
 │                                                         │
 │  • WebRTC — captures microphone audio from browser      │
-│  • Silero VAD — detects when user is speaking           │
-│  • Displays: Summaries, Action Items, Draft Emails      │
+│  • Drag & drop audio upload                             │
+│  • Displays: Transcript, Summary, Action Items, Email   │
 └──────────────────────────┬──────────────────────────────┘
                            │ Audio Chunks
                            ▼
@@ -82,10 +85,11 @@ Follows up on tasks before deadlines hit, keeping you and your team accountable 
 │  │ Audio → Text  │────▶│  • Summarization         │     │
 │  └───────────────┘     │  • Action Items          │     │
 │                        │  • Email Drafting        │     │
-│  ┌───────────────┐     └─────────────────────────┘     │
-│  │  Kokoro TTS   │                                      │
-│  │ Text → Speech │     ┌─────────────────────────┐     │
-│  └───────────────┘     │     RAG / LLMIndex       │     │
+│  ┌───────────────┐     │  • Deadline Reminders    │     │
+│  │  Kokoro TTS   │     └─────────────────────────┘     │
+│  │ Text → Speech │                                      │
+│  └───────────────┘     ┌─────────────────────────┐     │
+│                        │     RAG / LLMIndex       │     │
 │                        │  Context from meetings   │     │
 │                        └─────────────────────────┘     │
 └──────────────────────────┬──────────────────────────────┘
@@ -96,7 +100,8 @@ Follows up on tasks before deadlines hit, keeping you and your team accountable 
 │  • Meeting Summary                                      │
 │  • Action Items (with owners + deadlines)               │
 │  • Draft Follow-up Email                                │
-│  • Voice Response via Kokoro TTS                        │
+│  • Deadline Reminders                                   │
+│  • Voice Response via Kokoro TTS (coming soon)          │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -104,30 +109,45 @@ Follows up on tasks before deadlines hit, keeping you and your team accountable 
 
 ## Tech Stack
 
-| Layer | Technology |
-| --- | --- |
-| Frontend | Next.js |
-| Audio Capture | WebRTC |
-| Voice Detection | Silero VAD |
-| Speech-to-Text | Whisper |
-| LLM Engine | Groq API |
-| Memory / Context | RAG / LLMIndex |
-| Text-to-Speech | Kokoro TTS |
-| Backend | FastAPI |
-| Database | SQLite |
-| Version Control | GitHub |
+| Layer | Technology | Notes |
+| --- | --- | --- |
+| Frontend | HTML / CSS / JS | Clean UI with drag & drop audio upload |
+| Audio Capture | WebRTC | Browser-based mic capture |
+| Voice Detection | Silero VAD | Detects speech vs silence |
+| Speech-to-Text | Whisper (base model) | Local transcription via OpenAI Whisper |
+| Audio Processing | FFmpeg + imageio-ffmpeg | Converts audio to Whisper-compatible format |
+| LLM Engine | Groq API (llama-3.3-70b-versatile) | Switched from Ollama due to local storage constraints |
+| Memory / Context | RAG / LLMIndex | Coming soon |
+| Text-to-Speech | Kokoro TTS | Coming soon |
+| Backend | FastAPI | Python backend with all endpoints |
+| Database | SQLite | Coming soon |
+| Version Control | GitHub | With CI/CD pipeline |
+
+<br/>
+
+## Why Groq Instead of Ollama?
+
+The original plan was to run Ollama locally for the LLM. During development we switched to **Groq API** for the following reasons:
+
+- Local storage constraints made downloading Ollama models (4GB+) impractical
+- Groq's free tier is fast and reliable enough for a hackathon build
+- `llama-3.3-70b-versatile` on Groq outperforms smaller local models
+- Zero setup — just an API key
+
+Ollama remains an option for future self-hosted deployments.
 
 <br/>
 
 ## API Endpoints
 
-| Method | Endpoint | Description |
-| --- | --- | --- |
-| GET | `/health` | Server health check |
-| POST | `/summarize` | Transcript → meeting summary |
-| POST | `/action-items` | Transcript → task list |
-| POST | `/draft-email` | Transcript → follow-up email |
-| POST | `/transcribe` | Audio file → transcript |
+| Method | Endpoint | Description | Status |
+| --- | --- | --- | --- |
+| GET | `/health` | Server health check | ✅ Live |
+| POST | `/summarize` | Transcript → meeting summary | ✅ Live |
+| POST | `/transcribe` | Audio file → transcript | ✅ Live |
+| POST | `/process-meeting` | Audio → transcript + summary + action items + email | ✅ Live |
+| POST | `/action-items` | Transcript → task list | ✅ Live |
+| POST | `/draft-email` | Transcript → follow-up email | ✅ Live |
 
 <br/>
 
@@ -196,27 +216,54 @@ koko-backend/
     └── test_main.py     ← unit tests
 
 koko-frontend/
-├── app/
-│   └── page.jsx         ← main UI
-├── .env.local
-└── package.json
+├── koko.html            ← main landing page
+├── koko-landing.html    ← get started / onboarding
+├── koko-app.html        ← working meeting processor
+└── project.html         ← original project page
 ```
+
+<br/>
+
+## Progress Log
+
+### Week 2 — June 2026
+- ✅ FastAPI backend set up and running
+- ✅ Virtual environment (`KOKO`) configured
+- ✅ Switched from Ollama to Groq API (`llama-3.3-70b-versatile`)
+- ✅ Whisper (base) integrated for audio transcription
+- ✅ FFmpeg pipeline for audio conversion
+- ✅ `/summarize` endpoint live
+- ✅ `/transcribe` endpoint live
+- ✅ `/process-meeting` endpoint live — full pipeline working
+- ✅ `/action-items` endpoint live
+- ✅ `/draft-email` endpoint live
+- ✅ `/health` endpoint live
+- ✅ Frontend pages built and connected
+- ✅ GitHub repo with `.gitignore`
+- 🔴 Deployment — in progress
+- 🔴 CI/CD pipeline — pending
+- 🔴 Unit tests — pending
 
 <br/>
 
 ## Roadmap
 
-- [ ] Core meeting listener & transcription engine
-- [ ] Smart summary generation
-- [ ] Automated email drafting
-- [ ] Action item extraction & assignment
+- [x] Core transcription engine (Whisper)
+- [x] Smart summary generation (Groq)
+- [x] Automated email drafting
+- [x] Action item extraction
+- [x] Working web MVP
+- [ ] Deadline reminders & notifications
+- [ ] Live deployment
+- [ ] CI/CD pipeline
+- [ ] Unit tests
 - [ ] Zoom integration
 - [ ] Google Meet integration
 - [ ] Microsoft Teams integration
 - [ ] WhatsApp integration
+- [ ] Agentic capabilities
 - [ ] Mobile app — iOS & Android
 - [ ] Team collaboration dashboard
-- [ ] Custom voice & tone settings per user
 - [ ] Multi-language support
 
 <br/>
@@ -225,7 +272,9 @@ koko-frontend/
 
 Koko is in active early development, built by team **Neural5** as part of **TheUdaraProject Hackathon**.
 
-> *"We're just getting started — and we can't wait to show you what she becomes."*
+The web MVP is live and working at: [KOKO](https://koko-fronted.onrender.com). The goal is a fully autonomous AI agent that doesn't just generate outputs — but follows through on them.
+
+> *"We're just getting started and we can't wait to show you what she becomes."*
 
 <br/>
 
