@@ -450,10 +450,9 @@ async function processMeeting() {
 
     clearInterval(stepInterval);
 
-    if(!response.ok) {
-      const err = await response.json().catch(() => ({}));
-      throw new Error(err.detail || `Server error: ${response.status}`);
-    }
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('results').style.display = 'block';
+  hideError(); // add this line right here
 
     const data = await response.json();
 
