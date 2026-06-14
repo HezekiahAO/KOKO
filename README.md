@@ -240,7 +240,7 @@ frontend/
 - ✅ `/health` endpoint live
 - ✅ Frontend pages built and connected
 - ✅ GitHub repo with `.gitignore`
-- ✅ Deployment — in progress
+- ✅ Deployment — Done(Depolyed at [KOKO](https://koko-fronted.onrender.com))
 - 🔴 CI/CD pipeline — pending
 - 🔴 Unit tests — pending
 
