@@ -206,7 +206,7 @@ Then open `http://127.0.0.1:8000/docs` to test the API.
 ## Project Structure
 
 ```
-koko-backend/
+backend/
 ├── main.py              ← FastAPI app (all endpoints)
 ├── requirements.txt     ← dependencies
 ├── .env                 ← API keys (never commit this)
@@ -215,7 +215,7 @@ koko-backend/
 └── tests/
     └── test_main.py     ← unit tests
 
-koko-frontend/
+frontend/
 ├── koko.html            ← main landing page
 ├── koko-landing.html    ← get started / onboarding
 ├── koko-app.html        ← working meeting processor
