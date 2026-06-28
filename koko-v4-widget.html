@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koko — Widget Demo</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#6366f1;--pd:#4338ca;--ps:#e8eaff;
+  --t1:#1f2554;--t2:#4d578f;--tm:#8b93c4;
+  --bg:#f0f2fa;--s:#fff;--ss:#eef1ff;--b:#dfe5ff;
+}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--t1);min-height:100vh}
+
+/* Fake page behind widget */
+.demo-page{padding:2.5rem;max-width:700px;margin:0 auto}
+.demo-page h1{font-size:1.6rem;font-weight:800;color:var(--t1);margin-bottom:.5rem}
+.demo-page p{color:var(--t2);font-size:.95rem;line-height:1.65;margin-bottom:1rem}
+.demo-page .mock-card{background:var(--s);border:1px solid var(--b);border-radius:.85rem;padding:1.1rem;margin-bottom:.9rem}
+.demo-page .mock-card h3{font-size:.9rem;font-weight:700;margin-bottom:.4rem;color:var(--t1)}
+.demo-page .mock-card p{font-size:.85rem;color:var(--t2);margin:0}
+.demo-hint{position:fixed;bottom:6rem;right:1.75rem;background:var(--t1);color:#fff;font-size:.75rem;font-weight:600;padding:.4rem .75rem;border-radius:999px;white-space:nowrap;pointer-events:none;animation:fade-hint 2s 1.5s ease forwards;opacity:1}
+@keyframes fade-hint{to{opacity:0}}
+
+/* ═══ WIDGET ═══ */
+
+/* FAB */
+.fab{position:fixed;bottom:1.5rem;right:1.5rem;width:56px;height:56px;border-radius:50%;background:linear-gradient(135deg,var(--p),var(--pd));border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 24px rgba(99,102,241,.45);transition:transform .2s,box-shadow .2s;z-index:100}
+.fab:hover{transform:scale(1.08);box-shadow:0 12px 32px rgba(99,102,241,.55)}
+.fab.open{background:linear-gradient(135deg,var(--pd),#3730a3)}
+.fab svg{fill:#fff;transition:transform .2s}
+.fab.open svg{transform:rotate(45deg)}
+
+/* Pulse ring on FAB */
+.fab::before{content:"";position:absolute;width:56px;height:56px;border-radius:50%;border:2px solid rgba(99,102,241,.4);animation:fab-ring 2s ease-out infinite}
+@keyframes fab-ring{0%{transform:scale(1);opacity:.8}100%{transform:scale(1.8);opacity:0}}
+
+/* PANEL */
+.widget-panel{
+  position:fixed;bottom:5.5rem;right:1.5rem;
+  width:360px;max-height:560px;
+  background:var(--s);border:1px solid var(--b);border-radius:1.1rem;
+  box-shadow:0 24px 56px rgba(67,56,202,.18);
+  display:flex;flex-direction:column;overflow:hidden;
+  transform:scale(.9) translateY(16px);opacity:0;
+  transition:transform .25s cubic-bezier(.4,0,.2,1),opacity .25s;
+  pointer-events:none;z-index:99;
+}
+.widget-panel.open{transform:scale(1) translateY(0);opacity:1;pointer-events:all}
+
+/* Panel header */
+.wp-head{padding:.85rem 1rem;background:linear-gradient(135deg,var(--p),var(--pd));display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.wp-brand{display:flex;align-items:center;gap:.5rem;color:#fff;font-weight:800;font-size:.95rem}
+.wp-pulse{width:20px;height:20px;border-radius:50%;background:rgba(255,255,255,.2);position:relative;display:flex;align-items:center;justify-content:center}
+.wp-pulse::after{content:"";width:8px;height:8px;border-radius:50%;background:#fff;position:relative;z-index:1}
+.wp-pulse::before{content:"";position:absolute;width:20px;height:20px;border-radius:50%;border:1.5px solid rgba(255,255,255,.5);animation:wp-ring 2s ease-out infinite}
+@keyframes wp-ring{0%{width:20px;height:20px;opacity:.8}100%{width:44px;height:44px;opacity:0}}
+.wp-status{font-size:.72rem;color:rgba(255,255,255,.75);font-weight:500}
+.wp-close{background:none;border:none;color:rgba(255,255,255,.8);cursor:pointer;font-size:1.1rem;line-height:1;padding:.1rem}
+
+/* Tab bar */
+.wp-tabs{display:flex;border-bottom:1px solid var(--b);flex-shrink:0}
+.wt{flex:1;padding:.55rem .3rem;border:none;background:transparent;font-size:.72rem;font-weight:700;color:var(--tm);cursor:pointer;font-family:inherit;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;white-space:nowrap}
+.wt.active{color:var(--pd);border-bottom-color:var(--p)}
+
+/* Tab panes */
+.wp-pane{display:none;flex-direction:column;flex:1;overflow:hidden}
+.wp-pane.active{display:flex}
+
+/* Chat pane */
+.wc-msgs{flex:1;overflow-y:auto;padding:.75rem .9rem;display:flex;flex-direction:column;gap:.6rem}
+.wc-msg{display:flex;gap:.45rem;align-items:flex-start}
+.wc-msg.user{flex-direction:row-reverse}
+.wc-av{width:22px;height:22px;border-radius:50%;font-size:.62rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wc-av.k{background:var(--ps);color:var(--pd)}
+.wc-av.u{background:var(--p);color:#fff}
+.wc-bubble{padding:.5rem .7rem;border-radius:.75rem;font-size:.81rem;line-height:1.5;max-width:88%}
+.wc-msg.k .wc-bubble{background:var(--bg);border:1px solid var(--b);color:var(--t1);border-top-left-radius:.2rem}
+.wc-msg.user .wc-bubble{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;border-top-right-radius:.2rem}
+.wc-input{padding:.6rem .75rem;border-top:1px solid var(--b);display:flex;gap:.45rem;flex-shrink:0}
+.wc-input input{flex:1;border:1.5px solid var(--b);border-radius:.5rem;padding:.42rem .65rem;font-size:.81rem;outline:none;font-family:inherit;color:var(--t1);background:var(--bg);transition:border-color .15s}
+.wc-input input:focus{border-color:var(--p)}
+.wc-send{width:28px;height:28px;border-radius:.4rem;background:var(--p);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.wc-send:hover{background:var(--pd)}
+.wc-send svg{fill:#fff}
+.typing-dots{display:flex;gap:3px;padding:.2rem}
+.typing-dots span{width:5px;height:5px;border-radius:50%;background:var(--tm);animation:td .9s ease-in-out infinite}
+.typing-dots span:nth-child(2){animation-delay:.15s}
+.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes td{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+/* Notes / Actions / Email panes */
+.wp-scroll{flex:1;overflow-y:auto;padding:.75rem .9rem}
+.wp-section{margin-bottom:.85rem}
+.wp-section h4{font-size:.75rem;font-weight:700;color:var(--pd);margin-bottom:.45rem;text-transform:uppercase;letter-spacing:.04em}
+.wp-section p,.wp-section li{font-size:.81rem;color:var(--t2);line-height:1.6}
+.wp-section ul{padding-left:1rem}
+.wp-section li{margin-bottom:.25rem}
+.wp-ai-item{display:flex;align-items:flex-start;gap:.5rem;padding:.4rem 0;border-bottom:1px solid var(--b);font-size:.81rem}
+.wp-ai-item:last-child{border-bottom:none}
+.wp-chk{width:15px;height:15px;border-radius:.25rem;border:2px solid var(--b);flex-shrink:0;cursor:pointer;margin-top:1px;transition:all .15s}
+.wp-chk.done{background:var(--p);border-color:var(--p)}
+.wp-ai-t{color:var(--t2)}
+.wp-ai-t.done{text-decoration:line-through;color:var(--tm)}
+.email-pre{background:var(--bg);border:1px solid var(--b);border-radius:.5rem;padding:.7rem;font-size:.78rem;color:var(--t2);white-space:pre-wrap;line-height:1.65}
+.wp-btn{width:100%;padding:.5rem;border-radius:.5rem;border:none;background:var(--p);color:#fff;font-size:.8rem;font-weight:700;cursor:pointer;font-family:inherit;margin-top:.6rem;transition:background .15s}
+.wp-btn:hover{background:var(--pd)}
+.wp-btn.ghost{background:var(--ss);color:var(--pd);border:1px solid var(--b)}
+.wp-btn.ghost:hover{background:var(--ps)}
+
+.spinner-s{width:14px;height:14px;border:2px solid var(--b);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite;display:inline-block;vertical-align:middle}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* Quick chips */
+.quick-chips{padding:.5rem .75rem;display:flex;gap:.35rem;flex-wrap:wrap;border-bottom:1px solid var(--b);flex-shrink:0}
+.qc{padding:.28rem .6rem;border-radius:999px;border:1px solid var(--b);background:var(--s);font-size:.72rem;font-weight:600;color:var(--t2);cursor:pointer;transition:all .15s;white-space:nowrap}
+.qc:hover{background:var(--ps);border-color:var(--p);color:var(--pd)}
+
+/* Notification dot */
+.notif-dot{position:absolute;top:10px;right:10px;width:9px;height:9px;border-radius:50%;background:#ef4444;border:2px solid var(--bg);display:none}
+.notif-dot.visible{display:block}
+
+@media(max-width:420px){.widget-panel{width:calc(100vw - 2rem);right:1rem}}
+</style>
+</head>
+<body>
+
+<!-- Demo page content -->
+<div class="demo-page">
+  <h1>Your workspace</h1>
+  <p>Koko runs quietly in the corner. Click the button at the bottom-right to open her.</p>
+  <div class="mock-card"><h3>📅 Q3 Planning Meeting</h3><p>Today · 10:00 AM · Sarah, James, Amara, Tunde</p></div>
+  <div class="mock-card"><h3>📋 Active Projects</h3><p>Voice transcription · Email automation · Design system v2</p></div>
+  <div class="mock-card"><h3>✅ Pending action items</h3><p>4 items from yesterday's meeting</p></div>
+</div>
+<div class="demo-hint">👆 Try Koko →</div>
+
+<!-- FAB -->
+<button class="fab" id="fab" onclick="toggleWidget()" title="Open Koko">
+  <div class="notif-dot visible" id="notif"></div>
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="9" y="2" width="6" height="12" rx="3"/>
+    <path d="M5 10a7 7 0 0 0 14 0"/><line x1="12" y1="19" x2="12" y2="22"/><line x1="8" y1="22" x2="16" y2="22"/>
+  </svg>
+</button>
+
+<!-- WIDGET PANEL -->
+<div class="widget-panel" id="widget">
+
+  <div class="wp-head">
+    <div class="wp-brand">
+      <div class="wp-pulse"></div>
+      Koko
+      <span class="wp-status">· ready</span>
+    </div>
+    <button class="wp-close" onclick="toggleWidget()">✕</button>
+  </div>
+
+  <div class="wp-tabs">
+    <button class="wt active" onclick="showPane('chat')">💬 Chat</button>
+    <button class="wt" onclick="showPane('notes')">📝 Notes</button>
+    <button class="wt" onclick="showPane('actions')">✅ Actions</button>
+    <button class="wt" onclick="showPane('email')">✉️ Email</button>
+  </div>
+
+  <!-- CHAT -->
+  <div class="wp-pane active" id="pane-chat">
+    <div class="wc-msgs" id="wc-msgs">
+      <div class="wc-msg k">
+        <div class="wc-av k">K</div>
+        <div class="wc-bubble">Hi! I've been following your Q3 planning meeting. Ask me anything.</div>
+      </div>
+    </div>
+    <div class="quick-chips">
+      <button class="qc" onclick="quickQ('Summarise the meeting')">Summarise</button>
+      <button class="qc" onclick="quickQ('What action items came up?')">Actions</button>
+      <button class="qc" onclick="quickQ('Draft a follow-up email')">Email draft</button>
+    </div>
+    <div class="wc-input">
+      <input id="wc-inp" type="text" placeholder="Ask Koko…" onkeydown="if(event.key==='Enter')wcSend()">
+      <button class="wc-send" onclick="wcSend()"><svg width="12" height="12" viewBox="0 0 16 16"><path d="M14.5 8L2 2l2.5 6H14.5zM2 14l12.5-6H4.5L2 14z"/></svg></button>
+    </div>
+  </div>
+
+  <!-- NOTES -->
+  <div class="wp-pane" id="pane-notes">
+    <div class="wp-scroll" id="notes-scroll">
+      <div class="wp-section">
+        <h4>Decisions</h4>
+        <ul>
+          <li>Mobile app deferred to Q4</li>
+          <li>AWS budget approved by Tunde</li>
+        </ul>
+      </div>
+      <div class="wp-section">
+        <h4>Timeline</h4>
+        <p>Voice transcription → June 28 · Email automation → 2 more weeks</p>
+      </div>
+      <div class="wp-section">
+        <h4>Next steps</h4>
+        <ul>
+          <li>Amara shares Figma mockups</li>
+          <li>James finalises API spec</li>
+          <li>Sarah updates Notion roadmap</li>
+        </ul>
+      </div>
+      <button class="wp-btn" onclick="genNotes()">✨ Regenerate with AI</button>
+    </div>
+  </div>
+
+  <!-- ACTIONS -->
+  <div class="wp-pane" id="pane-actions">
+    <div class="wp-scroll">
+      <div id="wp-action-list"></div>
+      <button class="wp-btn ghost" onclick="genActions()" style="margin-top:.5rem">✨ Extract more with AI</button>
+    </div>
+  </div>
+
+  <!-- EMAIL -->
+  <div class="wp-pane" id="pane-email">
+    <div class="wp-scroll">
+      <div id="email-out">
+        <p style="font-size:.81rem;color:var(--tm);margin-bottom:.75rem">Generate a follow-up email based on today's meeting.</p>
+        <button class="wp-btn" onclick="genEmail()">✨ Generate email</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API="https://api.anthropic.com/v1/messages";
+const MODEL="claude-sonnet-4-6";
+let chatHist=[];
+let widgetOpen=false;
+
+const ACTIONS=[
+  {text:"James to finalise API spec by June 28",done:false},
+  {text:"Amara to share Figma mockups",done:false},
+  {text:"Sarah to update Q3 roadmap",done:true},
+  {text:"Tunde to confirm AWS budget amount",done:false},
+];
+
+function renderWpActions(){
+  document.getElementById('wp-action-list').innerHTML=ACTIONS.map((a,i)=>`
+    <div class="wp-ai-item">
+      <div class="wp-chk ${a.done?'done':''}" onclick="toggleWpA(${i})"></div>
+      <div class="wp-ai-t ${a.done?'done':''}">${a.text}</div>
+    </div>`).join('');
+}
+
+function toggleWpA(i){ACTIONS[i].done=!ACTIONS[i].done;renderWpActions();}
+
+function toggleWidget(){
+  widgetOpen=!widgetOpen;
+  document.getElementById('widget').classList.toggle('open',widgetOpen);
+  document.getElementById('fab').classList.toggle('open',widgetOpen);
+  document.getElementById('notif').classList.remove('visible');
+}
+
+function showPane(p){
+  document.querySelectorAll('.wp-pane').forEach(el=>el.classList.remove('active'));
+  document.querySelectorAll('.wt').forEach((t,i)=>t.classList.toggle('active',['chat','notes','actions','email'][i]===p));
+  document.getElementById('pane-'+p).classList.add('active');
+}
+
+function appendWc(role,text){
+  const el=document.getElementById('wc-msgs');
+  const isUser=role==='user';
+  const div=document.createElement('div');
+  div.className=`wc-msg ${isUser?'user':'k'}`;
+  div.innerHTML=`<div class="wc-av ${isUser?'u':'k'}">${isUser?'U':'K'}</div><div class="wc-bubble">${text.replace(/\n/g,'<br>')}</div>`;
+  el.appendChild(div);el.scrollTop=el.scrollHeight;
+}
+
+function showWcTyping(){
+  const el=document.getElementById('wc-msgs');
+  const d=document.createElement('div');d.id='wc-typing';d.className='wc-msg k';
+  d.innerHTML='<div class="wc-av k">K</div><div class="wc-bubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  el.appendChild(d);el.scrollTop=el.scrollHeight;
+}
+function hideWcTyping(){const t=document.getElementById('wc-typing');if(t)t.remove();}
+
+const CTX='Q3 Planning meeting. Sarah (PM), James (Eng), Amara (Design), Tunde (CEO). Topics: voice transcription ready June 28, email automation 2 more weeks, mobile deferred to Q4, AWS budget approved, Amara sharing Figma.';
+
+async function wcSend(msg){
+  const inp=document.getElementById('wc-inp');
+  const text=msg||(inp.value.trim());if(!text)return;
+  inp.value='';
+  appendWc('user',text);chatHist.push({role:'user',content:text});showWcTyping();
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:700,
+        system:`You are Koko, an embedded AI workplace assistant widget. Context: ${CTX}. Be concise — this is a small widget, keep replies to 2-3 sentences unless asked to draft something.`,
+        messages:chatHist})});
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'Sorry, could not respond.';
+    hideWcTyping();chatHist.push({role:'assistant',content:reply});appendWc('k',reply);
+  }catch{hideWcTyping();appendWc('k','Error. Please try again.');}
+}
+
+function quickQ(q){showPane('chat');wcSend(q);}
+
+async function genNotes(){
+  const el=document.getElementById('notes-scroll');
+  el.innerHTML='<div style="text-align:center;padding:1.5rem"><div class="spinner-s"></div></div>';
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:700,
+        messages:[{role:'user',content:`Generate brief meeting notes as JSON array of {heading, points:[]} objects. Meeting: ${CTX}. Only JSON.`}]})});
+    const data=await res.json();
+    const items=JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+    el.innerHTML=items.map(i=>`<div class="wp-section"><h4>${i.heading}</h4><ul>${i.points.map(p=>`<li>${p}</li>`).join('')}</ul></div>`).join('')
+      +'<button class="wp-btn" onclick="genNotes()">✨ Regenerate</button>';
+  }catch{el.innerHTML='<p style="font-size:.78rem;color:var(--tm)">Could not generate. Try again.</p><button class="wp-btn ghost" onclick="genNotes()">Retry</button>';}
+}
+
+async function genActions(){
+  const el=document.getElementById('wp-action-list');
+  el.innerHTML='<div style="text-align:center;padding:.75rem"><div class="spinner-s"></div></div>';
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:500,
+        messages:[{role:'user',content:`List 5 action items from this meeting as JSON array of strings. Meeting: ${CTX}. Only JSON.`}]})});
+    const data=await res.json();
+    const items=JSON.parse(data.content[0].text.replace(/```json|```/g,'').trim());
+    items.forEach(t=>ACTIONS.push({text:t,done:false}));
+  }catch{}
+  renderWpActions();
+}
+
+async function genEmail(){
+  const el=document.getElementById('email-out');
+  el.innerHTML='<div style="text-align:center;padding:1.5rem"><div class="spinner-s"></div><p style="font-size:.75rem;color:var(--tm);margin-top:.5rem">Drafting…</p></div>';
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:700,
+        messages:[{role:'user',content:`Write a concise follow-up email for this meeting. Include Subject:, greeting, 3-4 bullet points of decisions/next steps, and sign-off. Meeting: ${CTX}`}]})});
+    const data=await res.json();
+    const email=data.content?.[0]?.text||'';
+    el.innerHTML=`<div class="email-pre">${email}</div>
+      <button class="wp-btn ghost" onclick="copyEmail(this,'${encodeURIComponent(email)}')" style="margin-top:.5rem">📋 Copy</button>
+      <button class="wp-btn" onclick="genEmail()" style="margin-top:.4rem">✨ Regenerate</button>`;
+  }catch{el.innerHTML='<p style="font-size:.78rem;color:var(--tm)">Could not generate. Try again.</p><button class="wp-btn ghost" onclick="genEmail()">Retry</button>';}
+}
+
+function copyEmail(btn,encoded){
+  navigator.clipboard.writeText(decodeURIComponent(encoded));
+  btn.textContent='✓ Copied!';setTimeout(()=>btn.textContent='📋 Copy',2000);
+}
+
+renderWpActions();
+</script>
+</body>
+</html>

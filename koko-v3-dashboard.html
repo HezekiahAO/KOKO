@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Koko — Dashboard</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --p:#6366f1;--pd:#4338ca;--ps:#e8eaff;
+  --t1:#1f2554;--t2:#4d578f;--tm:#8b93c4;
+  --bg:#f4f6ff;--s:#fff;--ss:#eef1ff;--b:#dfe5ff;
+}
+html,body{height:100%;overflow:hidden}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--t1);display:flex;flex-direction:column}
+
+/* NAV */
+.nav{background:var(--s);border-bottom:1px solid var(--b);padding:0 1.5rem;height:56px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.brand{font-weight:800;font-size:1.05rem;display:flex;align-items:center;gap:.45rem}
+.pulse{width:20px;height:20px;border-radius:50%;background:var(--ps);position:relative;display:flex;align-items:center;justify-content:center}
+.pulse::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--p);position:absolute}
+.nav-right{display:flex;align-items:center;gap:.75rem}
+.status-badge{display:flex;align-items:center;gap:.4rem;font-size:.78rem;font-weight:600;color:var(--tm)}
+.rec-dot{width:7px;height:7px;border-radius:50%;background:#ef4444;animation:blink 1.1s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.user-av{width:30px;height:30px;border-radius:50%;background:var(--p);color:#fff;font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center}
+
+/* MAIN GRID */
+.main{display:grid;grid-template-columns:1fr 1fr 320px;grid-template-rows:1fr 1fr;gap:1rem;padding:1rem 1.25rem;flex:1;overflow:hidden;min-height:0}
+
+/* CARDS */
+.card{background:var(--s);border:1px solid var(--b);border-radius:1rem;display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.card-head{padding:.75rem 1rem .5rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b);flex-shrink:0}
+.card-title{font-size:.82rem;font-weight:700;color:var(--t1);display:flex;align-items:center;gap:.4rem}
+.card-body{flex:1;overflow-y:auto;padding:.85rem 1rem}
+
+/* Meeting panel (spans 2 rows left col) */
+.meeting-card{grid-row:1/3}
+
+/* Waveform */
+.waveform-strip{display:flex;align-items:center;gap:2px;height:40px;padding:.5rem 0}
+.wb{width:3px;border-radius:2px;background:var(--p);opacity:.7}
+.wb.active{animation:wb-anim 1s ease-in-out infinite alternate}
+.wb:nth-child(1){--h:12px;animation-duration:.7s}
+.wb:nth-child(2){--h:24px;animation-duration:.85s;animation-delay:.1s}
+.wb:nth-child(3){--h:36px;animation-duration:.65s;animation-delay:.2s}
+.wb:nth-child(4){--h:20px;animation-duration:1s;animation-delay:.05s}
+.wb:nth-child(5){--h:32px;animation-duration:.78s;animation-delay:.15s}
+.wb:nth-child(6){--h:16px;animation-duration:.92s;animation-delay:.25s}
+.wb:nth-child(7){--h:28px;animation-duration:.72s;animation-delay:.12s}
+.wb:nth-child(8){--h:40px;animation-duration:.88s;animation-delay:.08s}
+.wb:nth-child(9){--h:22px;animation-duration:.95s;animation-delay:.2s}
+.wb:nth-child(10){--h:34px;animation-duration:.68s;animation-delay:.3s}
+@keyframes wb-anim{from{height:calc(var(--h)*.25)}to{height:var(--h)}}
+
+.meeting-controls{display:flex;gap:.5rem;flex-wrap:wrap;padding:.5rem 0 .75rem}
+.mc-btn{padding:.42rem .85rem;border-radius:.5rem;border:1.5px solid var(--b);background:var(--s);font-size:.78rem;font-weight:700;color:var(--t2);cursor:pointer;font-family:inherit;transition:background .15s,border-color .15s,color .15s}
+.mc-btn:hover{background:var(--ps);border-color:var(--p);color:var(--pd)}
+.mc-btn.danger{border-color:#fecaca;color:#ef4444}
+.mc-btn.danger:hover{background:#fef2f2}
+.mc-btn.primary{background:var(--p);color:#fff;border-color:var(--p)}
+.mc-btn.primary:hover{background:var(--pd)}
+
+.transcript-area{flex:1;overflow-y:auto;font-size:.83rem;line-height:1.7;color:var(--t2)}
+.transcript-line{display:flex;gap:.5rem;margin-bottom:.35rem}
+.spk{font-weight:700;color:var(--t1);min-width:55px;font-size:.78rem}
+.ts-time{color:var(--tm);font-size:.72rem;margin-top:1px;min-width:32px}
+
+/* Actions list */
+.action-item{display:flex;align-items:flex-start;gap:.55rem;padding:.5rem 0;border-bottom:1px solid var(--b);font-size:.83rem}
+.action-item:last-child{border-bottom:none}
+.chk{width:16px;height:16px;border-radius:.3rem;border:2px solid var(--b);flex-shrink:0;cursor:pointer;margin-top:1px;transition:all .15s}
+.chk.done{background:var(--p);border-color:var(--p)}
+.ai-t{color:var(--t2);line-height:1.4}
+.ai-t.done{text-decoration:line-through;color:var(--tm)}
+.assignee{font-size:.72rem;color:var(--p);font-weight:600;margin-top:.15rem}
+
+/* Notes */
+.note-block{font-size:.83rem;color:var(--t2);line-height:1.65;margin-bottom:.65rem;padding-bottom:.65rem;border-bottom:1px solid var(--b)}
+.note-block:last-child{border-bottom:none}
+.note-tag{display:inline-block;padding:.18rem .5rem;border-radius:999px;background:var(--ps);color:var(--pd);font-size:.7rem;font-weight:700;margin-bottom:.35rem}
+
+/* CHAT (right col, spans 2 rows) */
+.chat-card{grid-column:3;grid-row:1/3;display:flex;flex-direction:column;overflow:hidden}
+.chat-messages{flex:1;overflow-y:auto;padding:.75rem .9rem;display:flex;flex-direction:column;gap:.65rem}
+.cmsg{display:flex;gap:.5rem;align-items:flex-start}
+.cmsg.user{flex-direction:row-reverse}
+.cav{width:24px;height:24px;border-radius:50%;font-size:.65rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cav.k{background:var(--ps);color:var(--pd)}
+.cav.u{background:var(--p);color:#fff}
+.cbubble{padding:.55rem .75rem;border-radius:.8rem;font-size:.82rem;line-height:1.5;max-width:85%}
+.cmsg.k .cbubble{background:var(--bg);border:1px solid var(--b);color:var(--t1);border-top-left-radius:.2rem}
+.cmsg.user .cbubble{background:linear-gradient(135deg,var(--p),var(--pd));color:#fff;border-top-right-radius:.2rem}
+.chat-input-area{padding:.6rem .75rem;border-top:1px solid var(--b);display:flex;gap:.5rem;align-items:center}
+.chat-input-area input{flex:1;border:1.5px solid var(--b);border-radius:.55rem;padding:.48rem .7rem;font-size:.82rem;outline:none;font-family:inherit;background:var(--bg);color:var(--t1);transition:border-color .15s}
+.chat-input-area input:focus{border-color:var(--p)}
+.csend{width:30px;height:30px;border-radius:.45rem;background:var(--p);border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.csend:hover{background:var(--pd)}
+.csend svg{fill:#fff}
+.typing-dots{display:flex;gap:3px;padding:.25rem}
+.typing-dots span{width:6px;height:6px;border-radius:50%;background:var(--tm);animation:td .9s ease-in-out infinite}
+.typing-dots span:nth-child(2){animation-delay:.15s}
+.typing-dots span:nth-child(3){animation-delay:.3s}
+@keyframes td{0%,80%,100%{transform:scale(.6);opacity:.4}40%{transform:scale(1);opacity:1}}
+
+.spinner-sm{width:14px;height:14px;border:2px solid var(--b);border-top-color:var(--p);border-radius:50%;animation:spin .7s linear infinite;display:inline-block}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.gen-btn{padding:.35rem .7rem;border-radius:.45rem;border:1px solid var(--b);background:var(--s);font-size:.73rem;font-weight:700;color:var(--t2);cursor:pointer;transition:background .15s;font-family:inherit}
+.gen-btn:hover{background:var(--ps);color:var(--pd)}
+
+@media(max-width:900px){
+  .main{grid-template-columns:1fr 1fr;grid-template-rows:auto auto auto}
+  .meeting-card{grid-row:auto;grid-column:1/3}
+  .chat-card{grid-column:1/3}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="brand"><div class="pulse"></div> Koko</div>
+  <div class="nav-right">
+    <div class="status-badge"><span class="rec-dot"></span> Meeting in progress</div>
+    <div class="user-av">U</div>
+  </div>
+</nav>
+
+<div class="main">
+
+  <!-- MEETING CARD -->
+  <div class="card meeting-card">
+    <div class="card-head">
+      <span class="card-title">🎙️ Live Meeting — Q3 Planning</span>
+      <button class="gen-btn" onclick="generateTranscript()">✨ AI Transcribe</button>
+    </div>
+    <div class="card-body" style="display:flex;flex-direction:column;gap:0">
+      <div class="waveform-strip" id="waveform">
+        <div class="wb active"></div><div class="wb active"></div><div class="wb active"></div>
+        <div class="wb active"></div><div class="wb active"></div><div class="wb active"></div>
+        <div class="wb active"></div><div class="wb active"></div><div class="wb active"></div><div class="wb active"></div>
+      </div>
+      <div class="meeting-controls">
+        <button class="mc-btn primary" onclick="toggleMeeting(this)">⏸ Pause</button>
+        <button class="mc-btn" onclick="generateTranscript()">📝 Generate notes</button>
+        <button class="mc-btn" onclick="generateActionsAI()">✅ Extract actions</button>
+        <button class="mc-btn danger" onclick="endMeeting()">⏹ End meeting</button>
+      </div>
+      <div class="transcript-area" id="transcript">
+        <div class="transcript-line"><span class="spk">Sarah</span><span class="ts-time">0:02</span><span>Let's kick off Q3 planning. James, can you walk us through the engineering status?</span></div>
+        <div class="transcript-line"><span class="spk">James</span><span class="ts-time">0:18</span><span>Sure. We're on track with the voice transcription module. Should be ready for internal testing by June 28.</span></div>
+        <div class="transcript-line"><span class="spk">Tunde</span><span class="ts-time">0:45</span><span>Good. What about the email automation piece? That's the one clients keep asking about.</span></div>
+        <div class="transcript-line"><span class="spk">James</span><span class="ts-time">1:02</span><span>We need two more weeks. The LLM integration is mostly done but we're tuning the prompts for accuracy.</span></div>
+        <div class="transcript-line"><span class="spk">Amara</span><span class="ts-time">1:25</span><span>I've finished the updated design mockups. I'll share them in Figma after this call.</span></div>
+        <div class="transcript-line"><span class="spk">Sarah</span><span class="ts-time">1:40</span><span>Perfect. Should we push the mobile app to Q4 given the bandwidth constraints?</span></div>
+        <div class="transcript-line"><span class="spk">Tunde</span><span class="ts-time">1:55</span><span>Yes, let's defer mobile. Focus on making the core product rock-solid first. I'll approve the AWS budget increase today.</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ACTIONS CARD -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">✅ Action Items</span>
+      <button class="gen-btn" onclick="generateActionsAI()">✨ Extract</button>
+    </div>
+    <div class="card-body" id="actions-body">
+      <div id="action-list"></div>
+    </div>
+  </div>
+
+  <!-- NOTES CARD -->
+  <div class="card">
+    <div class="card-head">
+      <span class="card-title">📝 Smart Notes</span>
+      <button class="gen-btn" onclick="generateNotesAI()">✨ Generate</button>
+    </div>
+    <div class="card-body" id="notes-body">
+      <div class="note-block"><span class="note-tag">Decision</span><br>Mobile app deferred to Q4 to focus on core product stability.</div>
+      <div class="note-block"><span class="note-tag">Budget</span><br>Tunde approved additional AWS spend — amount TBC.</div>
+      <div class="note-block"><span class="note-tag">Timeline</span><br>Voice transcription ready for internal testing June 28. Email automation needs 2 more weeks.</div>
+      <div class="note-block"><span class="note-tag">Design</span><br>Amara sharing updated Figma mockups post-meeting.</div>
+    </div>
+  </div>
+
+  <!-- CHAT CARD -->
+  <div class="card chat-card">
+    <div class="card-head">
+      <span class="card-title">💬 Ask Koko</span>
+    </div>
+    <div class="chat-messages" id="chat-messages">
+      <div class="cmsg k">
+        <div class="cav k">K</div>
+        <div class="cbubble">I'm following along. Ask me anything about this meeting.</div>
+      </div>
+    </div>
+    <div class="chat-input-area">
+      <input id="chat-inp" type="text" placeholder="Ask about the meeting…" onkeydown="if(event.key==='Enter')sendChat()">
+      <button class="csend" onclick="sendChat()"><svg width="13" height="13" viewBox="0 0 16 16"><path d="M14.5 8L2 2l2.5 6H14.5zM2 14l12.5-6H4.5L2 14z"/></svg></button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const API="https://api.anthropic.com/v1/messages";
+const MODEL="claude-sonnet-4-6";
+let chatHistory=[];
+let meetingPaused=false;
+
+const ACTIONS=[
+  {text:"James to complete API spec",who:"James",done:false},
+  {text:"Amara to share Figma mockups",who:"Amara",done:false},
+  {text:"Tunde to approve AWS budget",who:"Tunde",done:true},
+  {text:"Sarah to update Q3 roadmap in Notion",who:"Sarah",done:false},
+];
+
+function renderActions(){
+  document.getElementById('action-list').innerHTML=ACTIONS.map((a,i)=>`
+    <div class="action-item">
+      <div class="chk ${a.done?'done':''}" onclick="toggleA(${i})"></div>
+      <div>
+        <div class="ai-t ${a.done?'done':''}">${a.text}</div>
+        <div class="assignee">→ ${a.who}</div>
+      </div>
+    </div>`).join('');
+}
+
+function toggleA(i){ACTIONS[i].done=!ACTIONS[i].done;renderActions();}
+
+function toggleMeeting(btn){
+  meetingPaused=!meetingPaused;
+  btn.textContent=meetingPaused?'▶ Resume':'⏸ Pause';
+  document.querySelectorAll('.wb').forEach(w=>w.classList.toggle('active',!meetingPaused));
+}
+
+function endMeeting(){
+  document.querySelectorAll('.wb').forEach(w=>w.classList.remove('active'));
+  document.querySelector('.status-badge').innerHTML='<span style="color:#22c55e;font-size:.7rem">●</span> Meeting ended';
+  sendChatMsg('koko','Meeting ended. I\'ve captured the full transcript. Want me to send the follow-up email?');
+}
+
+function appendChat(role,text){
+  const el=document.getElementById('chat-messages');
+  const isUser=role==='user';
+  const div=document.createElement('div');
+  div.className=`cmsg ${isUser?'user':'k'}`;
+  div.innerHTML=`<div class="cav ${isUser?'u':'k'}">${isUser?'U':'K'}</div><div class="cbubble">${text.replace(/\n/g,'<br>')}</div>`;
+  el.appendChild(div);el.scrollTop=el.scrollHeight;
+}
+
+function sendChatMsg(role,text){appendChat(role,text);}
+
+function showTyping(){
+  const el=document.getElementById('chat-messages');
+  const div=document.createElement('div');div.id='typing';div.className='cmsg k';
+  div.innerHTML='<div class="cav k">K</div><div class="cbubble"><div class="typing-dots"><span></span><span></span><span></span></div></div>';
+  el.appendChild(div);el.scrollTop=el.scrollHeight;
+}
+
+function hideTyping(){const t=document.getElementById('typing');if(t)t.remove();}
+
+const MEETING_CONTEXT=`Meeting: Q3 Planning. Attendees: Sarah (PM), James (Eng), Amara (Design), Tunde (CEO). Key topics: voice transcription ready June 28, email automation needs 2 more weeks, mobile app deferred to Q4, Tunde approved AWS budget, Amara sharing Figma mockups.`;
+
+async function sendChat(){
+  const inp=document.getElementById('chat-inp');
+  const msg=inp.value.trim();if(!msg)return;
+  inp.value='';
+  appendChat('user',msg);
+  chatHistory.push({role:'user',content:msg});
+  showTyping();
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:1000,
+        system:`You are Koko, an AI assistant monitoring a live meeting. Context: ${MEETING_CONTEXT}. Answer questions concisely based on this meeting.`,
+        messages:chatHistory})});
+    const data=await res.json();
+    const reply=data.content?.[0]?.text||'Sorry, could not respond.';
+    hideTyping();chatHistory.push({role:'assistant',content:reply});appendChat('k',reply);
+  }catch{hideTyping();appendChat('k','Error. Please try again.');}
+}
+
+async function generateActionsAI(){
+  const el=document.getElementById('action-list');
+  el.innerHTML='<div style="text-align:center;padding:.75rem"><div class="spinner-sm"></div></div>';
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:600,
+        messages:[{role:'user',content:`Extract action items from this meeting. Return a JSON array of objects with keys "text" and "who". Meeting: ${MEETING_CONTEXT}. Return ONLY valid JSON.`}]})});
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'[]';
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const items=JSON.parse(clean);
+    items.forEach(a=>ACTIONS.push({text:a.text,who:a.who||'Team',done:false}));
+  }catch{}
+  renderActions();
+}
+
+async function generateNotesAI(){
+  const el=document.getElementById('notes-body');
+  el.innerHTML='<div style="text-align:center;padding:1rem"><div class="spinner-sm"></div></div>';
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:800,
+        messages:[{role:'user',content:`Generate concise meeting notes as a JSON array of objects with keys "tag" and "note". Meeting: ${MEETING_CONTEXT}. Return ONLY valid JSON.`}]})});
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'[]';
+    const clean=raw.replace(/```json|```/g,'').trim();
+    const notes=JSON.parse(clean);
+    el.innerHTML=notes.map(n=>`<div class="note-block"><span class="note-tag">${n.tag}</span><br>${n.note}</div>`).join('');
+  }catch{el.innerHTML='<p style="font-size:.83rem;color:var(--tm)">Could not generate notes. Try again.</p>';}
+}
+
+async function generateTranscript(){
+  const el=document.getElementById('transcript');
+  const orig=el.innerHTML;
+  el.innerHTML='<div style="text-align:center;padding:1rem"><div class="spinner-sm"></div><p style="font-size:.78rem;color:var(--tm);margin-top:.5rem">Transcribing…</p></div>';
+  try{
+    const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({model:MODEL,max_tokens:900,
+        messages:[{role:'user',content:'Generate a realistic meeting transcript for a Q3 planning session with 4 people (Sarah PM, James Eng, Amara Design, Tunde CEO). 8-10 lines. Return as JSON array of {speaker, time, text}. ONLY JSON.'}]})});
+    const data=await res.json();
+    const raw=data.content?.[0]?.text||'[]';
+    const lines=JSON.parse(raw.replace(/```json|```/g,'').trim());
+    el.innerHTML=lines.map(l=>`<div class="transcript-line"><span class="spk">${l.speaker}</span><span class="ts-time">${l.time}</span><span>${l.text}</span></div>`).join('');
+  }catch{el.innerHTML=orig;}
+}
+
+renderActions();
+</script>
+</body>
+</html>
